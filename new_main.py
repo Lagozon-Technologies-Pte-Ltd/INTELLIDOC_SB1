@@ -153,7 +153,33 @@ def main():
 
     img = Image.open(image)
     st.set_page_config(page_title=TITLE, page_icon=img,layout="wide",initial_sidebar_state="expanded")
-    
+    if customer_self_demo_flg:
+        # Set up custom CSS for the SANDBOX INSTANCE label
+        sandbox_css = """
+            <style>
+                .sandbox-instance {
+                    background-color: #FFFFE0;  /* Lighter yellow background */
+                    color: #00008B;  /* Dark blue text */
+                    
+                    font-size: 16px;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    display: inline-block;
+                    font-weight: bold;
+                    position: absolute;
+                    top: 53px;
+                    right: 10px;
+                    border: 1px solid black;  /* Thin black border */
+
+                }
+            </style>
+        """
+
+        # Use Streamlit's markdown to insert the custom CSS
+        st.markdown(sandbox_css, unsafe_allow_html=True)
+
+        # Displaying the label in the Streamlit app
+        st.markdown('<div class="sandbox-instance">SANDBOX INSTANCE</div>', unsafe_allow_html=True)
     # Function to hide the sidebar with CSS
     def hide_sidebar():
        hide_style = """
