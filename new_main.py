@@ -24,6 +24,11 @@
 import streamlit as st
 import os
 import chromadb
+import pandas as pd
+import shutil
+import time
+import json
+
 from llama_index.core import VectorStoreIndex
 from llama_index.core import StorageContext
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -35,33 +40,18 @@ from llama_index.core import Document
 from PIL import Image
 from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.core.query_engine import CitationQueryEngine
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core import Settings
 from dotenv import load_dotenv
 from llama_index.core.storage.docstore import SimpleDocumentStore
-import json
-from llama_index.core.vector_stores import VectorStoreQuery
-
 from streamlit_mic_recorder import speech_to_text
 from datetime import datetime
 from unstructured_ingest.v2.pipeline.pipeline import Pipeline
 from unstructured_ingest.v2.interfaces import ProcessorConfig
-from unstructured_ingest.v2.processes.connectors.local import (
-    LocalIndexerConfig,
-    LocalDownloaderConfig,
-    LocalConnectionConfig,
-    LocalUploaderConfig
-)
+from unstructured_ingest.v2.processes.connectors.local import (LocalIndexerConfig,LocalDownloaderConfig,LocalConnectionConfig,LocalUploaderConfig)
 from unstructured_ingest.v2.processes.partitioner import PartitionerConfig
-
-import pandas as pd
-import openai
-import shutil
-import time
-import textwrap
-
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
+from azure.storage.blob import BlobServiceClient
 
 load_dotenv()
 
@@ -91,8 +81,10 @@ INPUT=os.getenv("INPUT")
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 DOC_DELETED=os.getenv("DOC_DELETED")
 N_DOC=os.getenv("N_DOC")
+
 LLM_MODEL=os.getenv("LLM_MODEL")
 EMBEDDING_MODEL=os.getenv("EMBEDDING_MODEL")
+
 W=os.getenv("W")
 BM25_TOP=os.getenv("BM25_TOP")
 VEC_TOP=os.getenv("VEC_TOP")
@@ -105,6 +97,8 @@ LLM_INSTRUCTION=os.getenv("LLM_INSTRUCTION")
 
 api_key = os.getenv("UNSTRUCTURED_API_KEY")
 api_url = os.getenv("UNSTRUCTURED_API_URL")
+
+
 image=os.getenv("image")
 imagess=os.getenv("imagess")
 customer_self_demo_flg = os.getenv("customer_self_demo_flg")
@@ -116,6 +110,11 @@ healthcare_documents_link=os.getenv("healthcare_documents_link").split(',')
 insurance_documents_link=os.getenv("insurance_documents_link").split(',')
 LD_documents_link=os.getenv("LD_documents_link").split(',')
 others_documents_link=os.getenv("others_documents_link").split(',')
+
+# AZURE_ACCOUNT_KEY=os.getenv("AZURE_ACCOUNT_KEY")
+# AZURE_ACCOUNT_NAME=os.getenv("AZURE_ACCOUNT_NAME")
+AZURE_CONTAINER_NAME=os.getenv("AZURE_CONTAINER_NAME")
+AZURE_STORAGE_CONNECTION_STRING=os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 
 
 Settings.llm = OpenAI(model=LLM_MODEL,temperature=0) 
@@ -380,6 +379,7 @@ def admin_operations(collection_name, db_path):
                 file_content = file.read()
                 file_name = file.name
                 print("the name of file.....", file_name)
+                upload_to_blob_storage(AZURE_STORAGE_CONNECTION_STRING, AZURE_CONTAINER_NAME,file_content,file_name)
 
                 if parser_choice == "LlamaParse":
                     parsed_text = use_llamaparse(file_content, file_name)
@@ -531,7 +531,7 @@ def admin_operations(collection_name, db_path):
             
             if st.button("**Confirm Delete**"):
                 if selected_doc_to_delete:
-                    
+                    delete_from_blob_storage(AZURE_STORAGE_CONNECTION_STRING, AZURE_CONTAINER_NAME,selected_doc_to_delete)
                     # Retrieve all chunk IDs associated with the selected document name
                     ids_to_delete = st.session_state.doc_name_to_id.get(selected_doc_to_delete, [])
                     # print("IDs to delete:", ids_to_delete)
@@ -1034,7 +1034,36 @@ def use_llamaparse(file_content, file_name):
         res += i.text + " "
     return res
 
+def upload_to_blob_storage(connect_str: str,container_name: str, file_content, file_name):
+    blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
+    # Ensure the container exists and create if necessary
+    container_client = blob_service_client.get_container_client(container_name)
+    
+    # Upload the file to Azure Blob Storage
+    blob_client = container_client.get_blob_client(file_name)
+    print(f"Uploading {file_name} to blob storage...")
+    blob_client.upload_blob(file_content, overwrite=True)
+
+
+def delete_from_blob_storage(connect_str: str, container_name: str, file_name: str):
+    # Create a BlobServiceClient to interact with the Azure Blob Storage
+    blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+
+    # Get the container client
+    container_client = blob_service_client.get_container_client(container_name)
+
+    # Get the blob client for the specific file (blob)
+    blob_client = container_client.get_blob_client(file_name)
+    
+    # Delete the specified blob (file)
+    try:
+        print(f"Deleting {file_name} from blob storage...")
+        blob_client.delete_blob()
+        print(f"Blob '{file_name}' deleted successfully from container '{container_name}'.")
+    except Exception as e:
+        print(f"Failed to delete blob: {e}")
+        
 def use_unstructured(uploaded_file_path,file_name):
     
     # Configure the pipeline
