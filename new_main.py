@@ -1023,9 +1023,11 @@ def query_page(collection_name, db_path, admin):
                     and len(collection.get()["documents"]) > 0
                 ):
                     vector_store = ChromaVectorStore(chroma_collection=collection)
-                    docstore = SimpleDocumentStore.from_persist_path(
-                        f"./docstore_{collection_name}.json"
-                    )
+                    for i in range(len(DOCSTORE)):
+                        if collection_name in DOCSTORE[i]:
+                            coll = DOCSTORE[i]
+                            break
+                    docstore = SimpleDocumentStore.from_persist_path(coll)
                     storage_context = StorageContext.from_defaults(
                         docstore=docstore, vector_store=vector_store
                     )
