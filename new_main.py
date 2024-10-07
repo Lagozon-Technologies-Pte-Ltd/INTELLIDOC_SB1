@@ -21,9 +21,9 @@
 # ********************************************************************************************** #
 
 # Added by Aruna for chromaDB SQLite version error
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+# __import__('pysqlite3')
+# import sys
+# sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # Standard library imports
 import os
@@ -85,15 +85,14 @@ ADD_DOC = os.getenv("ADD_DOC")
 DOC_ADDED = os.getenv("DOC_ADDED")
 DELETE_DOC = os.getenv("DELETE_DOC")
 C_DELETE = os.getenv("C_DELETE")
-OUTPUT = os.getenv("OUTPUT")
-INPUT = os.getenv("INPUT")
+OUTPUT_FOLDER_FOR_UNSTRUCTURED = os.getenv("OUTPUT_FOLDER_FOR_UNSTRUCTURED")
+INPUT_FILEPATH_FOR_UNSTRUCTURED = os.getenv("INPUT_FILEPATH_FOR_UNSTRUCTURED")
 DOC_DELETED = os.getenv("DOC_DELETED")
 N_DOC = os.getenv("N_DOC")
 
 LLM_MODEL = os.getenv("LLM_MODEL")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
 
-W = os.getenv("W")
 BM25_TOP = os.getenv("BM25_TOP")
 VEC_TOP = os.getenv("VEC_TOP")
 TEMP_CHUNK_SIZE = os.getenv("TEMP_CHUNK_SIZE")
@@ -103,13 +102,14 @@ BATCH_SIZE = os.getenv("BATCH_SIZE")
 QA_PROMPT_STR = os.getenv("QA_PROMPT_STR")
 LLM_INSTRUCTION = os.getenv("LLM_INSTRUCTION")
 
-api_key = os.getenv("UNSTRUCTURED_API_KEY")
-api_url = os.getenv("UNSTRUCTURED_API_URL")
+unstructured_api_key = os.getenv("UNSTRUCTURED_API_KEY")
+unstructured_api_url = os.getenv("UNSTRUCTURED_API_URL")
+Weight_of_importance_for_retriver = os.getenv("Weight_of_importance_for_retriver")
 
 
 image = os.getenv("image")
-imagess = os.getenv("imagess")
-customer_self_demo_flg = os.getenv("customer_self_demo_flg")
+ui_images = os.getenv("ui_images")
+customer_self_demo_flag = os.getenv("customer_self_demo_flag")
 human_resources_documents_link = os.getenv("human_resources_documents_link").split(",")
 legal_documents_link = os.getenv("legal_documents_link").split(",")
 finance_documents_link = os.getenv("finance_documents_link").split(",")
@@ -170,7 +170,7 @@ def main():
     st.set_page_config(
         page_title=TITLE, page_icon=img, layout="wide", initial_sidebar_state="expanded"
     )
-    if customer_self_demo_flg:
+    if customer_self_demo_flag:
         # Set up custom CSS for the SANDBOX INSTANCE label
         sandbox_css = """
             <style>
@@ -232,7 +232,7 @@ def main():
     col1, col2 = st.columns([1, 9])
 
     with col1:
-        st.image(imagess, width=130)
+        st.image(ui_images, width=130)
 
     with col2:
         st.title(TITLE)
@@ -264,7 +264,7 @@ def main():
                 "**Choose your files**",
                 type=["pdf", "csv", "xlsx", "docx", "pptx"],
                 accept_multiple_files=True,
-                disabled=bool(customer_self_demo_flg),
+                disabled=bool(customer_self_demo_flag),
             )
 
             def initialize_index(uploaded_files, embed_model):
@@ -281,7 +281,7 @@ def main():
                 else:
                     for uploaded_file in uploaded_files:
                         # Save each uploaded file temporarily
-                        temp_file_path = INPUT
+                        temp_file_path = INPUT_FILEPATH_FOR_UNSTRUCTURED
                         with open(temp_file_path, "wb") as f:
                             f.write(uploaded_file.getbuffer())
 
@@ -351,7 +351,7 @@ def admin_operations(collection_name, db_path):
     # Initialize Streamlit app
     st.write(f"**Managing documents for collection: {collection_name}**")
     collection = init_chroma_collection(db_path, collection_name)
-    if customer_self_demo_flg:
+    if customer_self_demo_flag:
         warning_message = "1. Admin Persona to Insert/Delete the documents is disabled for “Sandbox-Try It Yourself” instance.\n\n2. Data Retrieval through Adhoc files upload under User Persona is disabled for “Sandbox-Try it Yourself” instance."
 
         placeholder = st.empty()  # Create a placeholder
@@ -373,7 +373,7 @@ def admin_operations(collection_name, db_path):
                     doc_id
                 )  # Append all IDs
         st.session_state.doc_list = list(st.session_state.doc_name_to_id.keys())
-    button_disabled = bool(customer_self_demo_flg)
+    button_disabled = bool(customer_self_demo_flag)
     # print("value of flag",button_disabled)
     if st.button("**Show Document**", disabled=button_disabled):
         docs = collection.get()["metadatas"]
@@ -393,7 +393,7 @@ def admin_operations(collection_name, db_path):
     if "show_uploader" not in st.session_state:
         st.session_state.show_uploader = False
 
-    if st.button("**Insert Document**", disabled=bool(customer_self_demo_flg)):
+    if st.button("**Insert Document**", disabled=bool(customer_self_demo_flag)):
         st.session_state.show_uploader = True
     if st.session_state.show_uploader:
 
@@ -433,7 +433,7 @@ def admin_operations(collection_name, db_path):
 
                     # print(parsed_text)
                 else:
-                    file_path = INPUT
+                    file_path = INPUT_FILEPATH_FOR_UNSTRUCTURED
                     with open(file_path, "wb") as f:
                         f.write(file.getbuffer())
                     parsed_text = use_unstructured(file_path, file_name)
@@ -570,7 +570,7 @@ def admin_operations(collection_name, db_path):
     if "show_delete" not in st.session_state:
         st.session_state.show_delete = False
 
-    if st.button("**Delete Document**", disabled=bool(customer_self_demo_flg)):
+    if st.button("**Delete Document**", disabled=bool(customer_self_demo_flag)):
         st.session_state.show_delete = True
     # if customer_self_demo_flg:
     #     warning_message="Owing to demo the above options of the admin page are disabled.\n\nThe option to upload temporary file and having a chat are also diabled in user page"
@@ -808,7 +808,7 @@ def query_page(collection_name, db_path, admin):
     # Initialize Chroma collection
     collection = init_chroma_collection(db_path, collection_name)
     # Create columns for buttons
-    col1, col2 = st.columns([13, 1])  # Adjust the ratio if needed
+    col1, col2 = st.columns([10, 1])  # Adjust the ratio if needed
 
     # # Place buttons in columns
     # with col1:
@@ -817,16 +817,16 @@ def query_page(collection_name, db_path, admin):
     # with col2:
     #     if st.button("Reset Chat"):
     #         reset_chat()
-    if customer_self_demo_flg:
+    if customer_self_demo_flag:
         get_links_by_collection(collection_name)
         select_database_table_question_csv = collection_name + ".csv"
         questions = pd.read_csv(select_database_table_question_csv)
         pre_defined_questions = st.selectbox(
             "Some frequently asked questions", questions
         )
-        FAQ = None
+        Frequently_asked_questions = None
         if st.button("Choose"):
-            FAQ = pre_defined_questions
+            Frequently_asked_questions = pre_defined_questions
 
     if "temp_index" in st.session_state and st.session_state.temp_index:
 
@@ -983,11 +983,11 @@ def query_page(collection_name, db_path, admin):
             # Create a radio button to choose between entering a question or selecting from FAQ
             # text_input_option = st.radio("**Choose how to ask your question:**", ['**Write your own question**', '**Select from FAQ**'])
             query = st.chat_input("Enter your question:")
-            if customer_self_demo_flg:
+            if customer_self_demo_flag:
                 if query:
                     single_question = query
                 else:
-                    single_question = FAQ  # Use the selected FAQ
+                    single_question = Frequently_asked_questions  # Use the selected FAQ
             else:
                 single_question = query
 
@@ -1023,6 +1023,7 @@ def query_page(collection_name, db_path, admin):
                     and len(collection.get()["documents"]) > 0
                 ):
                     vector_store = ChromaVectorStore(chroma_collection=collection)
+                    # docstore = SimpleDocumentStore.from_persist_path(f"./docstore_{collection_name}.json")
                     for i in range(len(DOCSTORE)):
                         if collection_name in DOCSTORE[i]:
                             coll = DOCSTORE[i]
@@ -1085,7 +1086,9 @@ def query_page(collection_name, db_path, admin):
                     #     "answer the question: {query_str}\n"
                     # )
                     qa_prompt_str = QA_PROMPT_STR
-                    alpha = float(W)  # Adjust alpha as needed
+                    alpha = float(
+                        Weight_of_importance_for_retriver
+                    )  # Adjust alpha as needed
                     retrieved_nodes = hybrid_retrieve(single_question, alpha)
                     ids = [doc.id_ for doc in retrieved_nodes]
                     # print(ids)
@@ -1258,12 +1261,12 @@ def use_unstructured(uploaded_file_path, file_name):
         source_connection_config=LocalConnectionConfig(),
         partitioner_config=PartitionerConfig(
             partition_by_api=True,
-            api_key=api_key,
-            partition_endpoint=api_url,
+            api_key=unstructured_api_key,
+            partition_endpoint=unstructured_api_url,
             strategy="hi_res",
         ),
         uploader_config=LocalUploaderConfig(
-            output_dir=OUTPUT
+            output_dir=OUTPUT_FOLDER_FOR_UNSTRUCTURED
         ),  # Specify the output directory
     )
 
@@ -1271,7 +1274,7 @@ def use_unstructured(uploaded_file_path, file_name):
     pipeline.run()
 
     # Find all JSON output files in the "output" folder
-    output_dir = OUTPUT
+    output_dir = OUTPUT_FOLDER_FOR_UNSTRUCTURED
     json_files = [f for f in os.listdir(output_dir) if f.endswith(".json")]
 
     concatenated_text = ""
@@ -1295,8 +1298,10 @@ def use_unstructured(uploaded_file_path, file_name):
         return "No JSON output found in the 'output' folder."
     os.remove(uploaded_file_path)
     # Remove the output folder after processing
-    if os.path.exists(OUTPUT):
-        shutil.rmtree(OUTPUT)  # This will delete the output folder and all its contents
+    if os.path.exists(OUTPUT_FOLDER_FOR_UNSTRUCTURED):
+        shutil.rmtree(
+            OUTPUT_FOLDER_FOR_UNSTRUCTURED
+        )  # This will delete the output folder and all its contents
 
     return (
         concatenated_text.strip()
