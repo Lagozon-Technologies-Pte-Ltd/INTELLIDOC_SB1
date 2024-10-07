@@ -410,7 +410,6 @@ def admin_operations(collection_name, db_path):
         files = st.file_uploader(
             "**Choose PDF files**", key="admin_upload", accept_multiple_files=True
         )
-        # files=st.file_uploader("**Choose your files**", type=["pdf", "csv", "xlsx", "docx", "pptx"], accept_multiple_files=True)
 
         if files and st.button("**Add Document**"):
             # Ensure that files is a list
@@ -427,11 +426,7 @@ def admin_operations(collection_name, db_path):
 
                 if parser_choice == "LlamaParse":
                     parsed_text = use_llamaparse(file_content, file_name)
-                    # with open(file_name, 'w', encoding='utf-8') as file:
 
-                    #       file.write(parsed_text)
-
-                    # print(parsed_text)
                 else:
                     file_path = INPUT_FILEPATH_FOR_UNSTRUCTURED
                     with open(file_path, "wb") as f:
@@ -445,11 +440,7 @@ def admin_operations(collection_name, db_path):
                 nodes = base_splitter.get_nodes_from_documents(
                     [Document(text=parsed_text)]
                 )
-                # counter=0
-                # for node in nodes:
-                #     print("The node of the whole doc are :",node.text)
-                #     counter+=1
-                # print("The no of nodes :",counter)
+
 
                 # Initialize storage context (by default it's in-memory)
                 storage_context = StorageContext.from_defaults()
@@ -572,9 +563,6 @@ def admin_operations(collection_name, db_path):
 
     if st.button("**Delete Document**", disabled=bool(customer_self_demo_flag)):
         st.session_state.show_delete = True
-    # if customer_self_demo_flg:
-    #     warning_message="Owing to demo the above options of the admin page are disabled.\n\nThe option to upload temporary file and having a chat are also diabled in user page"
-    #     st.warning(warning_message)
 
     if st.session_state.show_delete:
         # Ensure the document list is populated
@@ -613,8 +601,13 @@ def admin_operations(collection_name, db_path):
                             ]
                             # print("Valid IDs to delete:", ids_to_delete_existing)
 
+
                             # Step 1: Read the JSON file
-                            with open(f"docstore_{collection_name}.json", "r") as file:
+                            for i in range(len(DOCSTORE)):
+                               if collection_name in DOCSTORE[i]:
+                                    coll = DOCSTORE[i]
+                                    break
+                            with open(coll, 'r') as file:
                                 data = json.load(file)["docstore/data"]
 
                             for i in ids_to_delete_existing:
@@ -623,7 +616,8 @@ def admin_operations(collection_name, db_path):
                             final_dict = {}
                             final_dict["docstore/data"] = data
 
-                            with open(f"docstore_{collection_name}.json", "w") as file:
+
+                            with open(coll, 'w') as file:
                                 json.dump(final_dict, file, indent=4)
 
                             if ids_to_delete_existing:
@@ -810,13 +804,7 @@ def query_page(collection_name, db_path, admin):
     # Create columns for buttons
     col1, col2 = st.columns([10, 1])  # Adjust the ratio if needed
 
-    # # Place buttons in columns
-    # with col1:
-    #     show_documents(collection, key_prefix="key_prefix")
 
-    # with col2:
-    #     if st.button("Reset Chat"):
-    #         reset_chat()
     if customer_self_demo_flag:
         get_links_by_collection(collection_name)
         select_database_table_question_csv = collection_name + ".csv"
@@ -977,11 +965,8 @@ def query_page(collection_name, db_path, admin):
             key="kk",
         )
 
-        # if input_option == '**Text**':
-        #     single_question = st.chat_input("Enter your question:")
+
         if input_option == "**Text**":
-            # Create a radio button to choose between entering a question or selecting from FAQ
-            # text_input_option = st.radio("**Choose how to ask your question:**", ['**Write your own question**', '**Select from FAQ**'])
             query = st.chat_input("Enter your question:")
             if customer_self_demo_flag:
                 if query:
@@ -1076,15 +1061,7 @@ def query_page(collection_name, db_path, admin):
                             for doc_id, _ in sorted_results
                         ]
 
-                    # Set up a prompt template for the question-answering task
-                    # qa_prompt_str = (
-                    #     "Context information is below.\n"
-                    #     "---------------------\n"
-                    #     "{context_str}\n"
-                    #     "---------------------\n"
-                    #     "Given the context information and not prior knowledge, "
-                    #     "answer the question: {query_str}\n"
-                    # )
+
                     qa_prompt_str = QA_PROMPT_STR
                     alpha = float(
                         Weight_of_importance_for_retriver
@@ -1092,7 +1069,6 @@ def query_page(collection_name, db_path, admin):
                     retrieved_nodes = hybrid_retrieve(single_question, alpha)
                     ids = [doc.id_ for doc in retrieved_nodes]
                     # print(ids)
-                    # context_str = "\n\n".join([r.get_content()[:4000] for r in retrieved_nodes])
                     context_str = "\n\n".join(
                         [
                             r.get_content().replace("{", "").replace("}", "")
@@ -1106,7 +1082,6 @@ def query_page(collection_name, db_path, admin):
                         and "This question is outside the provided context."
                         not in st.session_state.previous_response
                     ):
-                        # context_str = f"{context_str}\n\nPrevious Response: {st.session_state.previous_response}"
                         context_str = (
                             f"{context_str}\n\n{st.session_state.previous_response}"
                         )
@@ -1117,12 +1092,7 @@ def query_page(collection_name, db_path, admin):
                     chat_text_qa_msgs = [
                         ChatMessage(
                             role=MessageRole.SYSTEM,
-                            #       content='''You are an AI language model designed to provide precise and contextually relevant responses. Adhere strictly to the following instructions:
-                            #                 Contextual Responses Only: Answer questions solely based on the content provided. Do not incorporate any external information or knowledge.
-                            #                 Out of Context Handling: If a question falls outside the scope of the provided content, respond with "OUT OF CONTEXT QUESTION."
-                            #                 Clarity and Precision: Ensure that your answers are clear, concise, and directly address the user's inquiries based on the context given.
-                            #                 Engagement: While maintaining accuracy, aim to keep the tone positive and engaging to enhance user interaction.'''
-                            content=LLM_INSTRUCTION,
+                             content=LLM_INSTRUCTION,
                         ),
                         ChatMessage(role=MessageRole.USER, content=fmt_qa_prompt),
                     ]
@@ -1139,26 +1109,13 @@ def query_page(collection_name, db_path, admin):
                         source = "NO METADATA"
                     else:
                         source = " "
-                        # # Function to remove the part after the last underscore
-                        # def remove_suffix(id_):
-                        #     return id_.rsplit('_', 1)[0]  # Split from the right and take the first part
 
-                        # # Create a new list with the modified IDs
-                        # modified_ids = [remove_suffix(id_) for id_ in ids]
-                        # if len(set(modified_ids)) == 1:
-                        #     source=modified_ids[0]
-                        # else:
-                        #     source = " and ".join(modified_ids)
                         source = " and ".join(ids)  # Join the original IDs with " and "
 
-                    # formatted_response = textwrap.fill(result.response,width=170)  # Adjust the width as needed
                     formatted_response = response.response
 
                     # Display the response for the single question
                     with st.chat_message("assistant"):
-                        # with st.spinner("Generating response..."):
-                        #     # Simulate a delay for demonstration purposes
-                        #     time.sleep(2)  # Replace this with actual processing logic
 
                         st.code(
                             f"{formatted_response} --- Source:{source}", language="None"
