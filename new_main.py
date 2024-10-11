@@ -1172,35 +1172,38 @@ def use_llamaparse(file_content, file_name):
 
 
 def upload_to_blob_storage(
-    connect_str: str, container_name: str, file_content, file_name
+    connect_str: str, container_name: str,collection_name, file_content, file_name
 ):
     blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
     # Ensure the container exists and create if necessary
     container_client = blob_service_client.get_container_client(container_name)
+    blob_name = f"{collection_name}/{file_name}"
+    blob_client = container_client.get_blob_client(blob_name)
 
-    # Upload the file to Azure Blob Storage
-    blob_client = container_client.get_blob_client(file_name)
-    print(f"Uploading {file_name} to blob storage...")
+    print(f"Uploading {file_name} to {blob_name}...")
     blob_client.upload_blob(file_content, overwrite=True)
 
 
-def delete_from_blob_storage(connect_str: str, container_name: str, file_name: str):
+def delete_from_blob_storage(connect_str: str, container_name: str, file_name: str,collection_name):
     # Create a BlobServiceClient to interact with the Azure Blob Storage
     blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
-    # Get the container client
+     # Get the container client
     container_client = blob_service_client.get_container_client(container_name)
 
+    # Create the blob name with the collection prefix
+    blob_name = f"{collection_name}/{file_name}"
+
     # Get the blob client for the specific file (blob)
-    blob_client = container_client.get_blob_client(file_name)
+    blob_client = container_client.get_blob_client(blob_name)
 
     # Delete the specified blob (file)
     try:
-        print(f"Deleting {file_name} from blob storage...")
+        print(f"Deleting {blob_name} from blob storage...")
         blob_client.delete_blob()
         print(
-            f"Blob '{file_name}' deleted successfully from container '{container_name}'."
+            f"Blob '{blob_name}' deleted successfully from container '{container_name}'."
         )
     except Exception as e:
         print(f"Failed to delete blob: {e}")
