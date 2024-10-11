@@ -420,6 +420,7 @@ def admin_operations(collection_name, db_path):
                 upload_to_blob_storage(
                     AZURE_STORAGE_CONNECTION_STRING,
                     AZURE_CONTAINER_NAME,
+                    collection_name,
                     file_content,
                     file_name,
                 )
@@ -583,6 +584,7 @@ def admin_operations(collection_name, db_path):
                         AZURE_STORAGE_CONNECTION_STRING,
                         AZURE_CONTAINER_NAME,
                         selected_doc_to_delete,
+                        collection_name
                     )
                     # Retrieve all chunk IDs associated with the selected document name
                     ids_to_delete = st.session_state.doc_name_to_id.get(
