@@ -118,6 +118,8 @@ healthcare_documents_link = os.getenv("healthcare_documents_link").split(",")
 insurance_documents_link = os.getenv("insurance_documents_link").split(",")
 LD_documents_link = os.getenv("LD_documents_link").split(",")
 others_documents_link = os.getenv("others_documents_link").split(",")
+NO_METADATA=os.getenv("NO_METADATA")
+METADATA_INSTRUCTION=os.getenv("METADATA_INSTRUCTION").split(",")
 
 # AZURE_ACCOUNT_KEY=os.getenv("AZURE_ACCOUNT_KEY")
 # AZURE_ACCOUNT_NAME=os.getenv("AZURE_ACCOUNT_NAME")
@@ -1107,12 +1109,19 @@ def query_page(collection_name, db_path, admin):
                     )
 
                     response = query_engine.query(single_question)
-                    if "out of context" in str(response.response).lower():
-                        source = "NO METADATA"
-                    else:
-                        source = " "
+                    source = " and ".join(ids)  # Default to joining IDs
 
-                        source = " and ".join(ids)  # Join the original IDs with " and "
+                    # Check if any instruction is present in the response
+                    for instruction in METADATA_INSTRUCTION:
+                        if instruction in str(response.response).lower():
+                            source =NO_METADATA
+                            break  # Exit the loop if a match is found
+                    # if "out of context" in str(response.response).lower():
+                    #     source = "NO METADATA"
+                    # else:
+                    #     source = " "
+
+                    #     source = " and ".join(ids)  # Join the original IDs with " and "
 
                     formatted_response = response.response
 
