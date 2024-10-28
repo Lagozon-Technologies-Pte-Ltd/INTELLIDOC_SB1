@@ -125,6 +125,7 @@ METADATA_INSTRUCTION=os.getenv("METADATA_INSTRUCTION").split(",")
 # AZURE_ACCOUNT_NAME=os.getenv("AZURE_ACCOUNT_NAME")
 AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME")
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+CSV_FILE_PATH = os.getenv("CSV_FILE_PATH")
 
 
 Settings.llm = OpenAI(model=LLM_MODEL, temperature=0)
@@ -135,8 +136,6 @@ openai_ef = OpenAIEmbeddingFunction(
     api_key=os.getenv("OPENAI_API_KEY"), model_name=EMBEDDING_MODEL
 )
 
-# CSV file to store query results
-CSV_FILE_PATH = "record_results.csv"
 
 
 # Function to append a row to the CSV file
