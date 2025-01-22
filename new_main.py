@@ -20,7 +20,7 @@
 # 11             26-sept-2024  Satya          Flag for demo
 # ********************************************************************************************** #
 
-# Added by Aruna for chromaDB SQLite version error
+# # Added by Aruna for chromaDB SQLite version error
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
@@ -231,6 +231,8 @@ def main():
 
     # Apply the custom style for radio buttons
     style_radio_buttons()
+
+
     # Add the logo at the top center
     col1, col2 = st.columns([7, 2])  # Create three columns with specified ratios
     with col1:
@@ -241,7 +243,36 @@ def main():
 
     with col2:
         st.image(ui_images,width=300)
-        # Use HTML to add spacing between the icon and title
+
+
+
+    # col1, col2, col3, col4, col5 = st.columns(5)  # Ratios for the first row
+    # with col1:
+    #     st.empty()  # Move ui_images to the top left corner
+
+    # with col2:
+    #     st.empty()  # Empty column to maintain spacing
+
+    # with col3:
+    #     st.empty()  # Empty column to maintain spacing
+    # with col4:
+    #     st.empty()
+    # with col5:
+    #     st.image(ui_images, width=300)
+
+    # # Create the second row for ui_logo and ui_headers
+    # col4, col5, col6, col7, col8 = st.columns(5)  # Ratios for the second row
+    # with col4:
+    #     st.image(ui_logo, width=300)  # Logo image
+
+    # with col5:
+    #     st.image(ui_headers, width=600)  # Header image
+
+
+
+
+
+
 
     tabs = st.radio(
         "Choose your tab", ["**Admin**", "**User**"], label_visibility="hidden"
@@ -380,20 +411,44 @@ def admin_operations(collection_name, db_path):
         st.session_state.doc_list = list(st.session_state.doc_name_to_id.keys())
     button_disabled = bool(customer_self_demo_flag)
     # print("value of flag",button_disabled)
+    # if st.button("**Show Document**", disabled=button_disabled):
+    #     docs = collection.get()["metadatas"]
+    #     ids = collection.get()["ids"]  # Get IDs separately
+    #     st.session_state.doc_name_to_id = {}
+    #     for doc_id, meta in zip(ids, docs):
+    #         if "source" in meta:
+    #             doc_name = meta["source"].split("\\")[-1]
+    #             if doc_name not in st.session_state.doc_name_to_id:
+    #                 st.session_state.doc_name_to_id[doc_name] = []
+    #             st.session_state.doc_name_to_id[doc_name].append(
+    #                 doc_id
+    #             )  # Append all IDs
+    #     st.session_state.doc_list = list(st.session_state.doc_name_to_id.keys())
+    #     st.selectbox("**Documents**", st.session_state.doc_list, key="doc_select")
     if st.button("**Show Document**", disabled=button_disabled):
         docs = collection.get()["metadatas"]
         ids = collection.get()["ids"]  # Get IDs separately
         st.session_state.doc_name_to_id = {}
+
         for doc_id, meta in zip(ids, docs):
             if "source" in meta:
                 doc_name = meta["source"].split("\\")[-1]
                 if doc_name not in st.session_state.doc_name_to_id:
                     st.session_state.doc_name_to_id[doc_name] = []
-                st.session_state.doc_name_to_id[doc_name].append(
-                    doc_id
-                )  # Append all IDs
+                st.session_state.doc_name_to_id[doc_name].append(doc_id)  # Append all IDs
+
+        # Create a list of document names
         st.session_state.doc_list = list(st.session_state.doc_name_to_id.keys())
-        st.selectbox("**Documents**", st.session_state.doc_list, key="doc_select")
+
+        # Count the number of unique documents
+        num_documents = len(st.session_state.doc_list)
+
+        # Display the number of documents
+        st.markdown(f"**Number of documents:** {num_documents}")
+
+        # Display the selectbox with document names
+        selected_doc = st.selectbox("**Documents**", st.session_state.doc_list, key="doc_select")
+
 
     if "show_uploader" not in st.session_state:
         st.session_state.show_uploader = False
@@ -744,7 +799,21 @@ def show_documents(collection, key_prefix):
         st.session_state[f"{key_prefix}_doc_list"] = list(
             st.session_state[f"{key_prefix}_doc_name_to_id"].keys()
         )
-        st.selectbox(
+        # st.selectbox(
+        #     "Documents",
+        #     st.session_state[f"{key_prefix}_doc_list"],
+        #     key=f"{key_prefix}_doc_select",
+        #     placeholder="See the document...",
+        # )
+
+        # Count the number of unique documents
+        num_documents = len(st.session_state[f"{key_prefix}_doc_list"])
+
+        # Display the number of documents above the selectbox
+        st.markdown(f"**Number of documents:** {num_documents}")
+
+        # Display the selectbox with document names
+        selected_doc = st.selectbox(
             "Documents",
             st.session_state[f"{key_prefix}_doc_list"],
             key=f"{key_prefix}_doc_select",
