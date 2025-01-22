@@ -108,6 +108,7 @@ Weight_of_importance_for_retriver = os.getenv("Weight_of_importance_for_retriver
 
 
 image = os.getenv("image")
+ui_logo=os.getenv("ui_logo")
 ui_images = os.getenv("ui_images")
 customer_self_demo_flag = os.getenv("customer_self_demo_flag")
 human_resources_documents_link = os.getenv("human_resources_documents_link").split(",")
@@ -230,13 +231,16 @@ def main():
 
     # Apply the custom style for radio buttons
     style_radio_buttons()
-    col1, col2 = st.columns([1, 9])
-
+    # Add the logo at the top center
+    col1, col2 = st.columns([7, 2])  # Create three columns with specified ratios
     with col1:
-        st.image(ui_images, width=130)
+
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.empty()
+        st.image(ui_logo,width=800)
 
     with col2:
-        st.title(TITLE)
+        st.image(ui_images,width=300)
         # Use HTML to add spacing between the icon and title
 
     tabs = st.radio(
