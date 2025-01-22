@@ -128,7 +128,6 @@ AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME")
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 CSV_FILE_PATH = os.getenv("CSV_FILE_PATH")
 
-
 Settings.llm = OpenAI(model=LLM_MODEL, temperature=0)
 # Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small", embed_batch_size=100,api_key=OPENAI_API_KEY)
 Settings.embed_model = OpenAIEmbedding(api_key=OPENAI_API_KEY)
@@ -172,6 +171,140 @@ def main():
     st.set_page_config(
         page_title=TITLE, page_icon=img, layout="wide", initial_sidebar_state="expanded"
     )
+    st.markdown(
+    """
+    <style>
+    .stApp > header {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+    st.markdown(
+    """
+    <style>
+    /* Set background color for the whole page */
+    .main {
+        background: linear-gradient(to bottom, #d0e7f9, #ffffff); /* Shaded blue */
+    }
+
+    hr {
+        border: none; /* Remove default border */
+        height: 1px; /* Optional: Set height */
+        background-color: #ffffff; /* Optional: Match background */
+    }
+
+    /* Ensure containers use the same background */
+    .stDivider, .css-1lcbmhc {
+        background-color: #d0e7f9 !important;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+    custom_css = """
+        <style>
+            /* Sidebar Background and Text Styling */
+            [data-testid="stSidebar"] {
+                background-color: #1CACEE; /* Dark Blue */
+            }
+            [data-testid="stSidebar"] * {
+                color: black; /* Ensure text is visible */
+            }
+            [data-testid="stSidebar"] input, [data-testid="stSidebar"] select, [data-testid="stSidebar"] textarea {
+                background-color: #3949AB; /* Light Blue for inputs */
+                color: black; /* Text color in input fields */
+                border-radius: 5px; /* Rounded corners */
+                border: 1px solid #303F9F; /* Light border for contrast */
+            }
+
+            /* Bottom Input Area Styling */
+            .stTextInput, .stTextArea {
+                background-color: #E8EAF6; /* Soft light blue background */
+                border: 1px solid #C5CAE9; /* Light border */
+                border-radius: 5px; /* Rounded corners */
+                color: #1A237E; /* Dark blue text */
+            }
+            div[data-baseweb="textarea"] > div {
+                background-color: #E8EAF6 !important;
+                border-radius: 5px !important;
+                border: 1px solid #C5CAE9 !important;
+            }
+
+            /* Button Styling */
+            button[kind="primary"] {
+                background-color: #3949AB !important; /* Blue button */
+                color: white !important; /* White text */
+                border: none !important;
+                border-radius: 5px !important;
+            }
+            button[kind="secondary"] {
+                background-color: #E8EAF6 !important; /* Light background */
+                color: #1A237E !important; /* Dark blue text */
+                border: 1px solid #303F9F !important;
+                border-radius: 5px !important;
+            }
+
+            /* General Styling for Page */
+            .main {
+                background-color: #E8EAF6; /* Light Blue Main Content Background */
+            }
+        </style>
+    """
+    custom_css1 = """
+        <style>
+            /* Set global font size for the entire application */
+            html, body, [data-testid="stAppViewContainer"] * {
+                font-size: 25px !important; /* Set font size to 32px */
+            }
+            /* Adjust button text size */
+            button[kind="primary"], button[kind="secondary"] {
+                font-size: 22px !important; /* Adjust button font size */
+            }
+        </style>
+    """
+
+    # Inject the custom CSS into the app
+    st.markdown(custom_css1, unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+        /* Style the dropdown border */
+        .stSelectbox div[data-baseweb="select"] {
+            border: 2px solid #1A237E;
+            border-radius: 15px;
+        }
+
+        /* Change the text color inside the dropdown */
+        .stSelectbox div[data-baseweb="select"] .Dropdown-control {
+            color: red;
+        }
+    </style>
+""", unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    /* Style for the chat input */
+    div[role="textbox"] {
+        background-color: #e6f2ff !important; /* Light blue background */
+        border: 2px solid #003366 !important; /* Dark blue border */
+        color: #003366 !important; /* Dark blue text */
+        border-radius: 5px;
+        padding: 10px;
+    }
+    div[role="textbox"]::placeholder {
+        color: #003366 !important; /* Dark blue placeholder text */
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Chat input component
+
+
+# Chat input component
+
+# Inject the CSS into the app
+    st.markdown(custom_css, unsafe_allow_html=True)
     if customer_self_demo_flag:
         # Set up custom CSS for the SANDBOX INSTANCE label
         sandbox_css = """
@@ -232,47 +365,11 @@ def main():
     # Apply the custom style for radio buttons
     style_radio_buttons()
 
-
-    # Add the logo at the top center
-    col1, col2 = st.columns([7, 2])  # Create three columns with specified ratios
-    with col1:
-
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.empty()
-        st.image(ui_logo,width=800)
-
-    with col2:
-        st.image(ui_images,width=300)
-
-
-
-    # col1, col2, col3, col4, col5 = st.columns(5)  # Ratios for the first row
-    # with col1:
-    #     st.empty()  # Move ui_images to the top left corner
-
-    # with col2:
-    #     st.empty()  # Empty column to maintain spacing
-
-    # with col3:
-    #     st.empty()  # Empty column to maintain spacing
-    # with col4:
-    #     st.empty()
-    # with col5:
-    #     st.image(ui_images, width=300)
-
-    # # Create the second row for ui_logo and ui_headers
-    # col4, col5, col6, col7, col8 = st.columns(5)  # Ratios for the second row
-    # with col4:
-    #     st.image(ui_logo, width=300)  # Logo image
-
-    # with col5:
-    #     st.image(ui_headers, width=600)  # Header image
-
-
-
-
-
-
+    top_section = st.columns([7, 2])  # Adjust column ratios to position the logo in the top-right corner
+    with top_section[0]:
+        st.image(ui_logo, width=900)  # Main app logo on the left
+    with top_section[1]:
+        st.image(ui_images, width=300)
 
     tabs = st.radio(
         "Choose your tab", ["**Admin**", "**User**"], label_visibility="hidden"
@@ -411,20 +508,6 @@ def admin_operations(collection_name, db_path):
         st.session_state.doc_list = list(st.session_state.doc_name_to_id.keys())
     button_disabled = bool(customer_self_demo_flag)
     # print("value of flag",button_disabled)
-    # if st.button("**Show Document**", disabled=button_disabled):
-    #     docs = collection.get()["metadatas"]
-    #     ids = collection.get()["ids"]  # Get IDs separately
-    #     st.session_state.doc_name_to_id = {}
-    #     for doc_id, meta in zip(ids, docs):
-    #         if "source" in meta:
-    #             doc_name = meta["source"].split("\\")[-1]
-    #             if doc_name not in st.session_state.doc_name_to_id:
-    #                 st.session_state.doc_name_to_id[doc_name] = []
-    #             st.session_state.doc_name_to_id[doc_name].append(
-    #                 doc_id
-    #             )  # Append all IDs
-    #     st.session_state.doc_list = list(st.session_state.doc_name_to_id.keys())
-    #     st.selectbox("**Documents**", st.session_state.doc_list, key="doc_select")
     if st.button("**Show Document**", disabled=button_disabled):
         docs = collection.get()["metadatas"]
         ids = collection.get()["ids"]  # Get IDs separately
@@ -878,7 +961,7 @@ def query_page(collection_name, db_path, admin):
     # Initialize Chroma collection
     collection = init_chroma_collection(db_path, collection_name)
     # Create columns for buttons
-    col1, col2 = st.columns([10, 1])  # Adjust the ratio if needed
+    col1, col2 = st.columns([10, 2])  # Adjust the ratio if needed
 
 
     if customer_self_demo_flag:
