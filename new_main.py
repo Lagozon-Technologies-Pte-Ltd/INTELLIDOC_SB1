@@ -171,16 +171,16 @@ def main():
     st.set_page_config(
         page_title=TITLE, page_icon=img, layout="wide", initial_sidebar_state="expanded"
     )
-    st.markdown(
-    """
-    <style>
-    .stApp > header {
-        display: none;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+#     st.markdown(
+#     """
+#     <style>
+#     .stApp > header {
+#         display: none;
+#     }
+#     </style>
+#     """,
+#     unsafe_allow_html=True
+# )
     st.markdown(
     """
     <style>
