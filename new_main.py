@@ -319,7 +319,6 @@ def main():
                     display: inline-block;
                     font-weight: bold;
                     position: absolute;
-                    top: 53px;
                     right: 10px;
                     border: 1px solid black;  /* Thin black border */
 
