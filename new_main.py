@@ -364,11 +364,18 @@ def main():
     # Apply the custom style for radio buttons
     style_radio_buttons()
 
-    top_section = st.columns([7, 2])  # Adjust column ratios to position the logo in the top-right corner
-    with top_section[0]:
-        st.image(ui_logo, width=900)  # Main app logo on the left
-    with top_section[1]:
-        st.image(ui_images, width=300)
+    top_section = st.columns([2, 6, 2])  # Adjust ratios for alignment
+
+    with top_section[0]:  # Left section for Client logo and UI logo
+        st.image("client_logo.jpg", width=200)  # Adjust width as needed
+        st.image(ui_logo, width=700)  # Adjust width as needed
+
+    with top_section[1]:  # Center section (Empty for spacing)
+        st.write("")
+
+    with top_section[2]:  # Right section for other elements
+        st.image(ui_images, width=200)  # Adjust width as needed
+
 
     tabs = st.radio(
         "Choose your tab", ["**Admin**", "**User**"], label_visibility="hidden"
